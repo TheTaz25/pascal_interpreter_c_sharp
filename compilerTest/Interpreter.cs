@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace compilerTest
 {
@@ -50,7 +48,8 @@ namespace compilerTest
             if (currentToken.getType() == type)
             {
                 currentToken = getNextToken();
-            } else
+            }
+            else
             {
                 throw new Exception("Error parsing input");
             }

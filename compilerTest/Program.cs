@@ -7,11 +7,13 @@ namespace compilerTest
         static void Main(string[] args)
         {
             string input;
-            while (true) {
+            while (true)
+            {
                 try
                 {
                     input = Console.ReadLine();
-                } catch
+                }
+                catch
                 {
                     break;
                 }

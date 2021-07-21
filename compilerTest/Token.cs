@@ -6,6 +6,7 @@
         {
             INTEGER,
             PLUS,
+            MINUS,
             EOF
         }
 

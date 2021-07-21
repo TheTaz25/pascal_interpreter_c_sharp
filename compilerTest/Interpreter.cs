@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace compilerTest
 {
@@ -14,14 +15,17 @@ namespace compilerTest
 
         private Token getNextToken()
         {
-            string text = this.text;
-            if (pos > text.Length - 1)
+            if (isEOL())
             {
                 return new Token(Token.Type.EOF, null);
             }
 
-            string currentChar = text.Substring(pos, 1);
-            pos++;
+            string currentChar = text.Substring(pos++, 1);
+
+            while (currentChar == " ")
+            {
+                currentChar = text.Substring(pos++, 1);
+            }
 
             switch (currentChar)
             {
@@ -35,12 +39,40 @@ namespace compilerTest
                 case "8":
                 case "9":
                 case "0":
-                    return new Token(Token.Type.INTEGER, int.Parse(currentChar));
+                    return getIntegerToken(currentChar);
                 case "+":
                     return new Token(Token.Type.PLUS, currentChar);
+                case "-":
+                    return new Token(Token.Type.MINUS, currentChar);
                 default:
                     throw new Exception("Error parsing input");
             }
+        }
+
+        private bool isEOL() => pos > text.Length - 1;
+
+        private Token getIntegerToken(string current)
+        {
+            string allIntegers = current;
+            List<string> allDigits = new List<string>() { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" };
+            if (!isEOL())
+            {
+                while (!isEOL())
+                {
+                    string currentChar = text.Substring(pos++, 1);
+                    if (allDigits.Contains(currentChar))
+                    {
+                        allIntegers += currentChar;
+                    }
+                    else
+                    {
+                        pos--;
+                        break;
+                    }
+                    if (isEOL()) { break; }
+                }
+            }
+            return new Token(Token.Type.INTEGER, int.Parse(allIntegers));
         }
 
         private void eat(Token.Type type)
@@ -62,12 +94,27 @@ namespace compilerTest
             eat(Token.Type.INTEGER);
 
             Token op = currentToken;
-            eat(Token.Type.PLUS);
+            if (op.getType().Equals(Token.Type.PLUS))
+            {
+                eat(Token.Type.PLUS);
+            }
+            else
+            {
+                eat(Token.Type.MINUS);
+            }
 
             Token right = currentToken;
             eat(Token.Type.INTEGER);
 
-            return left.getValue() + right.getValue();
+            switch (op.getType())
+            {
+                case Token.Type.PLUS:
+                    return left.getValue() + right.getValue();
+                case Token.Type.MINUS:
+                    return left.getValue() - right.getValue();
+                default:
+                    throw new Exception("Error parsing input");
+            }
         }
     }
 }

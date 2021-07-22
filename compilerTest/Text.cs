@@ -20,10 +20,11 @@ namespace compilerTest
         }
 
         public bool isEol() => currentPosition == (chars.Length - 1) && lastCharSent;
+        public bool isEolReal() => currentPosition == (chars.Length - 1);
 
         public char getChar(bool advance = false) {
             char c = chars[currentPosition];
-            if (currentPosition == (chars.Length - 1))
+            if (isEolReal())
             {
                 lastCharSent = true;
             }
@@ -36,7 +37,7 @@ namespace compilerTest
 
         public void advanceChar()
         {
-            if (currentPosition != (chars.Length - 1))
+            if (!isEolReal())
             {
                 currentPosition++;
             }
@@ -50,7 +51,11 @@ namespace compilerTest
             while (chars[currentPosition] == ' ')
             {
                 advanceChar();
-                if (isEol()) break;
+                if (isEolReal())
+                {
+                    lastCharSent = true;
+                    break;
+                }
             }
         }
 

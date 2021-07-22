@@ -14,11 +14,11 @@ namespace compilerTest
         private Token getNextToken()
         {
 
+            text.skipWhiteSpace();
             if (text.isEol())
             {
                 return new Token(Token.Type.EOF, null);
             }
-            text.skipWhiteSpace();
 
             if (text.isDigit())
                 return new Token(Token.Type.INTEGER, text.getNextIntegerValue());

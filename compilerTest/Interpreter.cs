@@ -44,6 +44,10 @@ namespace compilerTest
                     return new Token(Token.Type.PLUS, currentChar);
                 case "-":
                     return new Token(Token.Type.MINUS, currentChar);
+                case "*":
+                    return new Token(Token.Type.MULT, currentChar);
+                case "/":
+                    return new Token(Token.Type.DIV, currentChar);
                 default:
                     throw new Exception("Error parsing input");
             }
@@ -93,28 +97,42 @@ namespace compilerTest
             Token left = currentToken;
             eat(Token.Type.INTEGER);
 
-            Token op = currentToken;
-            if (op.getType().Equals(Token.Type.PLUS))
-            {
-                eat(Token.Type.PLUS);
-            }
-            else
-            {
-                eat(Token.Type.MINUS);
-            }
+            
 
-            Token right = currentToken;
-            eat(Token.Type.INTEGER);
-
-            switch (op.getType())
+            int result = left.getValue();
+            while(currentToken.getType() != Token.Type.EOF)
             {
-                case Token.Type.PLUS:
-                    return left.getValue() + right.getValue();
-                case Token.Type.MINUS:
-                    return left.getValue() - right.getValue();
-                default:
-                    throw new Exception("Error parsing input");
+                Token op = currentToken;
+                switch (op.getType())
+                {
+                    case Token.Type.PLUS:
+                    case Token.Type.MINUS:
+                    case Token.Type.DIV:
+                    case Token.Type.MULT:
+                        eat(op.getType());
+                        break;
+                }
+                Token right = currentToken;
+                eat(Token.Type.INTEGER);
+                switch (op.getType())
+                {
+                    case Token.Type.PLUS:
+                        result += right.getValue();
+                        break;
+                    case Token.Type.MINUS:
+                        result -= right.getValue();
+                        break;
+                    case Token.Type.MULT:
+                        result *= right.getValue();
+                        break;
+                    case Token.Type.DIV:
+                        result /= right.getValue();
+                        break;
+                    default:
+                        throw new Exception("Error parsing input");
+                }
             }
+            return result;
         }
     }
 }

@@ -7,6 +7,8 @@
             INTEGER,
             PLUS,
             MINUS,
+            MULT,
+            DIV,
             EOF
         }
 

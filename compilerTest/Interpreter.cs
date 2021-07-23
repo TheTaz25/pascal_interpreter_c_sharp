@@ -37,6 +37,14 @@ namespace compilerTest
                     return new Token(Token.Type.DIV, text.GetChar(true));
             }
 
+            if (text.IsParen())
+            {
+                if (text.IsOpenParen())
+                    return new Token(Token.Type.PAREN_OPEN, text.GetChar(true));
+                if (text.IsClosingParen())
+                    return new Token(Token.Type.PAREN_CLOSE, text.GetChar(true));
+            }
+
             throw new Exception("Token not recognized: " + text.GetChar());
         }
 
@@ -59,9 +67,26 @@ namespace compilerTest
             return value;
         }
 
+        public dynamic Wrapped()
+        {
+            List<Token.Type> applicableTypes = new List<Token.Type> { Token.Type.PAREN_OPEN };
+            int result;
+            while(applicableTypes.Contains(currentToken.GetTokenType()))
+            {
+                if(currentToken.GetTokenType() == Token.Type.PAREN_OPEN)
+                {
+                    Eat(Token.Type.PAREN_OPEN);
+                    result = Expression();
+                    Eat(Token.Type.PAREN_CLOSE);
+                    return result;
+                } 
+            }
+            return Factor();
+        }
+
         public dynamic Term()
         {
-            int result = Factor();
+            int result = Wrapped();
             List<Token.Type> applicableTypes = new List<Token.Type> { Token.Type.DIV, Token.Type.MULT };
             while(applicableTypes.Contains(currentToken.GetTokenType()))
             {
@@ -69,12 +94,12 @@ namespace compilerTest
                 if (token.GetTokenType() == Token.Type.MULT)
                 {
                     Eat(Token.Type.MULT);
-                    result *= Factor();
+                    result *= Wrapped();
                 }
                 else if (token.GetTokenType() == Token.Type.DIV)
                 {
                     Eat(Token.Type.DIV);
-                    result /= Factor();
+                    result /= Wrapped();
                 }
             }
             return result;

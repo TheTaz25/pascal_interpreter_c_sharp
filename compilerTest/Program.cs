@@ -4,7 +4,7 @@ namespace compilerTest
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             string input;
             while (true)

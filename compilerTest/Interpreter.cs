@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace compilerTest
 {
@@ -9,6 +10,7 @@ namespace compilerTest
         public Interpreter(string text)
         {
             this.text = new Text(text);
+            currentToken = getNextToken();
         }
 
         private Token getNextToken()
@@ -50,45 +52,48 @@ namespace compilerTest
             }
         }
 
+        public dynamic factor()
+        {
+            int value = currentToken.getValue();
+            eat(Token.Type.INTEGER);
+            return value;
+        }
+
+        public dynamic term()
+        {
+            int result = factor();
+            List<Token.Type> applicableTypes = new List<Token.Type> { Token.Type.DIV, Token.Type.MULT };
+            while(applicableTypes.Contains(currentToken.getType()))
+            {
+                Token token = currentToken;
+                if (token.getType() == Token.Type.MULT)
+                {
+                    eat(Token.Type.MULT);
+                    result *= factor();
+                }
+                else if (token.getType() == Token.Type.DIV)
+                {
+                    eat(Token.Type.DIV);
+                    result /= factor();
+                }
+            }
+            return result;
+        }
+
         public dynamic expression()
         {
-            currentToken = getNextToken();
-            Token left = currentToken;
-            eat(Token.Type.INTEGER);
-
-            
-
-            int result = left.getValue();
-            while(currentToken.getType() != Token.Type.EOF)
-            {
-                Token op = currentToken;
-                switch (op.getType())
+            int result = term();
+            List<Token.Type> applicableTypes = new List<Token.Type> { Token.Type.MINUS, Token.Type.PLUS };
+            while (applicableTypes.Contains(currentToken.getType())) {
+                Token token = currentToken;
+                if (token.getType() == Token.Type.PLUS)
                 {
-                    case Token.Type.PLUS:
-                    case Token.Type.MINUS:
-                    case Token.Type.DIV:
-                    case Token.Type.MULT:
-                        eat(op.getType());
-                        break;
-                }
-                Token right = currentToken;
-                eat(Token.Type.INTEGER);
-                switch (op.getType())
+                    eat(Token.Type.PLUS);
+                    result += term();
+                } else if (token.getType() == Token.Type.MINUS)
                 {
-                    case Token.Type.PLUS:
-                        result += right.getValue();
-                        break;
-                    case Token.Type.MINUS:
-                        result -= right.getValue();
-                        break;
-                    case Token.Type.MULT:
-                        result *= right.getValue();
-                        break;
-                    case Token.Type.DIV:
-                        result /= right.getValue();
-                        break;
-                    default:
-                        throw new Exception("Error parsing input");
+                    eat(Token.Type.MINUS);
+                    result -= term();
                 }
             }
             return result;

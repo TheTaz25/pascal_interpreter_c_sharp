@@ -22,7 +22,7 @@ namespace compilerTest
                     continue;
                 }
                 Interpreter interpreter = new Interpreter(input);
-                int result = interpreter.expression();
+                int result = interpreter.Expression();
                 Console.WriteLine(result);
             }
         }

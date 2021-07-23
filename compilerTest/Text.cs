@@ -8,50 +8,53 @@ namespace compilerTest
 {
     class Text
     {
-        char[] chars;
+        readonly char[] chars;
         int currentPosition = 0;
         bool lastCharSent = false;
 
-        private List<char> digits = new List<char>() { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' };
-        private List<char> mathChars = new List<char>() { '-', '+', '*', '/' };
+        static readonly List<char> digits = new List<char>() { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' };
+        static readonly private List<char> mathChars = new List<char>() { '-', '+', '*', '/' };
+        static readonly private List<char> parens = new List<char>() { '(', ')' };
         public Text(string text)
         {
             chars = text.ToCharArray();
         }
 
-        public bool isEol() => currentPosition == (chars.Length - 1) && lastCharSent;
-        public bool isEolReal() => currentPosition == (chars.Length - 1);
+        public bool IsEol() => currentPosition == (chars.Length - 1) && lastCharSent;
+        public bool IsEolReal() => currentPosition == (chars.Length - 1);
 
-        public char getChar(bool advance = false) {
+        public char GetChar(bool advance = false) {
             char c = chars[currentPosition];
-            if (isEolReal())
+            if (IsEolReal())
             {
                 lastCharSent = true;
             }
             if (advance)
             {
-                advanceChar();
+                AdvanceChar();
             }
             return c;
         }
 
-        public void advanceChar()
+        public void AdvanceChar()
         {
-            if (!isEolReal())
+            if (!IsEolReal())
             {
                 currentPosition++;
             }
         }
 
-        public bool isDigit() => digits.Contains(chars[currentPosition]);
-        public bool isMathChar() => mathChars.Contains(chars[currentPosition]);
+        public bool IsDigit() => digits.Contains(chars[currentPosition]);
+        public bool IsMathChar() => mathChars.Contains(chars[currentPosition]);
+        public bool IsParen() => parens.Contains(chars[currentPosition]);
 
-        public void skipWhiteSpace()
+
+        public void SkipWhiteSpace()
         {
             while (chars[currentPosition] == ' ')
             {
-                advanceChar();
-                if (isEolReal())
+                AdvanceChar();
+                if (IsEolReal())
                 {
                     lastCharSent = true;
                     break;
@@ -59,18 +62,20 @@ namespace compilerTest
             }
         }
 
-        public bool isPlus() => chars[currentPosition] == '+';
-        public bool isMinus() => chars[currentPosition] == '-';
-        public bool isMult() => chars[currentPosition] == '*';
-        public bool isDiv() => chars[currentPosition] == '/';
+        public bool IsPlus() => chars[currentPosition] == '+';
+        public bool IsMinus() => chars[currentPosition] == '-';
+        public bool IsMult() => chars[currentPosition] == '*';
+        public bool IsDiv() => chars[currentPosition] == '/';
+        public bool IsOpenParen() => chars[currentPosition] == '(';
+        public bool IsClosingParen() => chars[currentPosition] == ')';
 
-        public int getNextIntegerValue()
+        public int GetNextIntegerValue()
         {
-            string allIntegers = getChar().ToString();
-            advanceChar();
-            while(!isEol() && isDigit())
+            string allIntegers = GetChar().ToString();
+            AdvanceChar();
+            while(!IsEol() && IsDigit())
             {
-                allIntegers += getChar(true);
+                allIntegers += GetChar(true);
             }
             return int.Parse(allIntegers);
         }

@@ -5,46 +5,46 @@ namespace compilerTest
 {
     class Interpreter
     {
-        private Text text;
+        readonly private Text text;
         private Token currentToken = null;
         public Interpreter(string text)
         {
             this.text = new Text(text);
-            currentToken = getNextToken();
+            currentToken = GetNextToken();
         }
 
-        private Token getNextToken()
+        private Token GetNextToken()
         {
 
-            text.skipWhiteSpace();
-            if (text.isEol())
+            text.SkipWhiteSpace();
+            if (text.IsEol())
             {
                 return new Token(Token.Type.EOF, null);
             }
 
-            if (text.isDigit())
-                return new Token(Token.Type.INTEGER, text.getNextIntegerValue());
+            if (text.IsDigit())
+                return new Token(Token.Type.INTEGER, text.GetNextIntegerValue());
 
-            if(text.isMathChar())
+            if(text.IsMathChar())
             {
-                if (text.isPlus())
-                    return new Token(Token.Type.PLUS, text.getChar(true));
-                if (text.isMinus())
-                    return new Token(Token.Type.MINUS, text.getChar(true));
-                if (text.isMult())
-                    return new Token(Token.Type.MULT, text.getChar(true));
-                if (text.isDiv())
-                    return new Token(Token.Type.DIV, text.getChar(true));
+                if (text.IsPlus())
+                    return new Token(Token.Type.PLUS, text.GetChar(true));
+                if (text.IsMinus())
+                    return new Token(Token.Type.MINUS, text.GetChar(true));
+                if (text.IsMult())
+                    return new Token(Token.Type.MULT, text.GetChar(true));
+                if (text.IsDiv())
+                    return new Token(Token.Type.DIV, text.GetChar(true));
             }
 
-            throw new Exception("Token not recognized: " + text.getChar());
+            throw new Exception("Token not recognized: " + text.GetChar());
         }
 
-        private void eat(Token.Type type)
+        private void Eat(Token.Type type)
         {
-            if (currentToken.getType() == type)
+            if (currentToken.GetTokenType() == type)
             {
-                currentToken = getNextToken();
+                currentToken = GetNextToken();
             }
             else
             {
@@ -52,48 +52,48 @@ namespace compilerTest
             }
         }
 
-        public dynamic factor()
+        public dynamic Factor()
         {
-            int value = currentToken.getValue();
-            eat(Token.Type.INTEGER);
+            int value = currentToken.GetValue();
+            Eat(Token.Type.INTEGER);
             return value;
         }
 
-        public dynamic term()
+        public dynamic Term()
         {
-            int result = factor();
+            int result = Factor();
             List<Token.Type> applicableTypes = new List<Token.Type> { Token.Type.DIV, Token.Type.MULT };
-            while(applicableTypes.Contains(currentToken.getType()))
+            while(applicableTypes.Contains(currentToken.GetTokenType()))
             {
                 Token token = currentToken;
-                if (token.getType() == Token.Type.MULT)
+                if (token.GetTokenType() == Token.Type.MULT)
                 {
-                    eat(Token.Type.MULT);
-                    result *= factor();
+                    Eat(Token.Type.MULT);
+                    result *= Factor();
                 }
-                else if (token.getType() == Token.Type.DIV)
+                else if (token.GetTokenType() == Token.Type.DIV)
                 {
-                    eat(Token.Type.DIV);
-                    result /= factor();
+                    Eat(Token.Type.DIV);
+                    result /= Factor();
                 }
             }
             return result;
         }
 
-        public dynamic expression()
+        public dynamic Expression()
         {
-            int result = term();
+            int result = Term();
             List<Token.Type> applicableTypes = new List<Token.Type> { Token.Type.MINUS, Token.Type.PLUS };
-            while (applicableTypes.Contains(currentToken.getType())) {
+            while (applicableTypes.Contains(currentToken.GetTokenType())) {
                 Token token = currentToken;
-                if (token.getType() == Token.Type.PLUS)
+                if (token.GetTokenType() == Token.Type.PLUS)
                 {
-                    eat(Token.Type.PLUS);
-                    result += term();
-                } else if (token.getType() == Token.Type.MINUS)
+                    Eat(Token.Type.PLUS);
+                    result += Term();
+                } else if (token.GetTokenType() == Token.Type.MINUS)
                 {
-                    eat(Token.Type.MINUS);
-                    result -= term();
+                    Eat(Token.Type.MINUS);
+                    result -= Term();
                 }
             }
             return result;

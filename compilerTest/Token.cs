@@ -9,11 +9,13 @@
             MINUS,
             MULT,
             DIV,
+            PAREN_OPEN,
+            PAREN_CLOSE,
             EOF
         }
 
-        private Type type;
-        private dynamic value;
+        readonly private Type type;
+        readonly private dynamic value;
 
         public Token(Type type, dynamic value)
         {
@@ -21,9 +23,9 @@
             this.value = value;
         }
 
-        public string print() => "Token({type}, {value})".Replace("{type}", type.ToString()).Replace("{value}", value);
+        public string Print() => "Token({type}, {value})".Replace("{type}", type.ToString()).Replace("{value}", value);
 
-        public Type getType() => type;
-        public dynamic getValue() => value;
+        public Type GetTokenType() => type;
+        public dynamic GetValue() => value;
     }
 }

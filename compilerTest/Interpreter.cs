@@ -83,9 +83,24 @@ namespace compilerTest
             return Factor();
         }
 
+        public Ast UnaryParse()
+        {
+            Token token = currentToken;
+            if (token.GetTokenType() == Token.Type.MINUS)
+            {
+                Eat(Token.Type.MINUS);
+                return new UnaryOp(token.GetTokenType(), Wrapped());    
+            } else if (token.GetTokenType() == Token.Type.PLUS)
+            {
+                Eat(Token.Type.PLUS);
+                return new UnaryOp(token.GetTokenType(), Wrapped());
+            }
+            return Wrapped();
+        }
+
         public Ast Term()
         {
-            Ast node = Wrapped();
+            Ast node = UnaryParse();
             List<Token.Type> applicableTypes = new List<Token.Type> { Token.Type.DIV, Token.Type.MULT };
             while(applicableTypes.Contains(currentToken.GetTokenType()))
             {
@@ -98,7 +113,7 @@ namespace compilerTest
                 {
                     Eat(Token.Type.DIV);
                 }
-                node = new BinOp(node, token.GetTokenType(), Wrapped());
+                node = new BinOp(node, token.GetTokenType(), UnaryParse());
             }
             return node;
         }

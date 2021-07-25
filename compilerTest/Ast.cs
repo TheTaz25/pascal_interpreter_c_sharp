@@ -65,6 +65,27 @@ namespace compilerTest
         }
     }
 
+    class UnaryOp : Ast
+    {
+        readonly Token.Type op;
+        readonly Ast value;
+
+        public UnaryOp(Token.Type op, Ast value)
+        {
+            this.op = op;
+            this.value = value;
+        }
+
+        public override dynamic Visit()
+        {
+            if (op == Token.Type.PLUS)
+                return +value.Visit();
+            if (op == Token.Type.MINUS)
+                return -value.Visit();
+            throw new NotSupportedException();
+        }
+    }
+
     class Numeric : Ast
     {
         readonly int value;

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace compilerTest
 {
@@ -14,14 +10,26 @@ namespace compilerTest
     class BinOp : Ast
     {
         Ast left;
-        Token op;
+        Token.Type op;
         Ast right;
+
+        public BinOp()
+        {
+
+        }
+
+        public BinOp(Ast left, Token.Type op, Ast right)
+        {
+            this.left = left;
+            this.op = op;
+            this.right = right;
+        }
 
         public void SetLeft(Ast ast)
         {
             left = ast;
         }
-        public void SetOp(Token ast)
+        public void SetOp(Token.Type ast)
         {
             op = ast;
         }
@@ -30,11 +38,19 @@ namespace compilerTest
             right = ast;
         }
 
+        public void SwitchSides()
+        {
+            Ast swap = left;
+            left = right;
+            right = swap;
+        }
+
         public override dynamic Visit()
         {
             dynamic leftValue = left.Visit();
             dynamic rightValue = right.Visit();
-            switch (op.GetTokenType()) {
+            switch (op)
+            {
                 case Token.Type.DIV:
                     return leftValue / rightValue;
                 case Token.Type.MULT:
@@ -55,6 +71,13 @@ namespace compilerTest
         public Numeric(int value)
         {
             this.value = value;
+        }
+
+        public BinOp ToBinOp()
+        {
+            BinOp binOp = new BinOp();
+            binOp.SetLeft(this);
+            return binOp;
         }
 
         public override dynamic Visit()

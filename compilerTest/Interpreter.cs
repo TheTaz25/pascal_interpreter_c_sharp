@@ -60,33 +60,32 @@ namespace compilerTest
             }
         }
 
-        public dynamic Factor()
+        public Numeric Factor()
         {
             int value = currentToken.GetValue();
             Eat(Token.Type.INTEGER);
-            return value;
+            return new Numeric(value);
         }
 
-        public dynamic Wrapped()
+        public Ast Wrapped()
         {
             List<Token.Type> applicableTypes = new List<Token.Type> { Token.Type.PAREN_OPEN };
-            int result;
             while(applicableTypes.Contains(currentToken.GetTokenType()))
             {
                 if(currentToken.GetTokenType() == Token.Type.PAREN_OPEN)
                 {
                     Eat(Token.Type.PAREN_OPEN);
-                    result = Expression();
+                    Ast node = Expression();
                     Eat(Token.Type.PAREN_CLOSE);
-                    return result;
+                    return node;
                 } 
             }
             return Factor();
         }
 
-        public dynamic Term()
+        public Ast Term()
         {
-            int result = Wrapped();
+            Ast node = Wrapped();
             List<Token.Type> applicableTypes = new List<Token.Type> { Token.Type.DIV, Token.Type.MULT };
             while(applicableTypes.Contains(currentToken.GetTokenType()))
             {
@@ -94,34 +93,32 @@ namespace compilerTest
                 if (token.GetTokenType() == Token.Type.MULT)
                 {
                     Eat(Token.Type.MULT);
-                    result *= Wrapped();
                 }
                 else if (token.GetTokenType() == Token.Type.DIV)
                 {
                     Eat(Token.Type.DIV);
-                    result /= Wrapped();
                 }
+                node = new BinOp(node, token.GetTokenType(), Wrapped());
             }
-            return result;
+            return node;
         }
 
-        public dynamic Expression()
+        public Ast Expression()
         {
-            int result = Term();
+            Ast node = Term();
             List<Token.Type> applicableTypes = new List<Token.Type> { Token.Type.MINUS, Token.Type.PLUS };
             while (applicableTypes.Contains(currentToken.GetTokenType())) {
                 Token token = currentToken;
                 if (token.GetTokenType() == Token.Type.PLUS)
                 {
                     Eat(Token.Type.PLUS);
-                    result += Term();
                 } else if (token.GetTokenType() == Token.Type.MINUS)
                 {
                     Eat(Token.Type.MINUS);
-                    result -= Term();
                 }
+                node = new BinOp(node, token.GetTokenType(), Term());
             }
-            return result;
+            return node;
         }
     }
 }

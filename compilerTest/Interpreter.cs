@@ -25,7 +25,32 @@ namespace compilerTest
             if (text.IsDigit())
                 return new Token(Token.Type.INTEGER, text.GetNextIntegerValue());
 
-            if(text.IsMathChar())
+            if (text.IsAlphaNumeric())
+            {
+                string word = text.GetNextAlphaNumericValue();
+                return text.GetTokenForKeyWord(word);
+            }
+
+            if (text.IsColon() && text.PeekChar() == '=')
+            {
+                text.AdvanceChar();
+                text.AdvanceChar();
+                return new Token(Token.Type.ASSIGN, ":=");
+            }
+
+            if (text.IsSemicolon())
+            {
+                text.AdvanceChar();
+                return new Token(Token.Type.SEMI, ';');
+            }
+
+            if (text.IsDot())
+            {
+                text.AdvanceChar();
+                return new Token(Token.Type.DOT, '.');
+            }
+
+            if (text.IsMathChar())
             {
                 if (text.IsPlus())
                     return new Token(Token.Type.PLUS, text.GetChar(true));
@@ -60,25 +85,39 @@ namespace compilerTest
             }
         }
 
-        public Numeric Factor()
+        public Ast Factor()
         {
-            int value = currentToken.GetValue();
-            Eat(Token.Type.INTEGER);
-            return new Numeric(value);
+            dynamic tokenValue = currentToken.GetValue();
+            Ast node;
+            switch (currentToken.GetTokenType())
+            {
+                case Token.Type.INTEGER:
+                    Eat(Token.Type.INTEGER);
+                    node = new Numeric(tokenValue);
+                    break;
+                case Token.Type.ID:
+                    Eat(Token.Type.ID);
+                    node = new Var(tokenValue);
+                    break;
+                default:
+                    throw new DataMisalignedException();
+            }
+
+            return node;
         }
 
         public Ast Wrapped()
         {
             List<Token.Type> applicableTypes = new List<Token.Type> { Token.Type.PAREN_OPEN };
-            while(applicableTypes.Contains(currentToken.GetTokenType()))
+            while (applicableTypes.Contains(currentToken.GetTokenType()))
             {
-                if(currentToken.GetTokenType() == Token.Type.PAREN_OPEN)
+                if (currentToken.GetTokenType() == Token.Type.PAREN_OPEN)
                 {
                     Eat(Token.Type.PAREN_OPEN);
                     Ast node = Expression();
                     Eat(Token.Type.PAREN_CLOSE);
                     return node;
-                } 
+                }
             }
             return Factor();
         }
@@ -89,8 +128,9 @@ namespace compilerTest
             if (token.GetTokenType() == Token.Type.MINUS)
             {
                 Eat(Token.Type.MINUS);
-                return new UnaryOp(token.GetTokenType(), Wrapped());    
-            } else if (token.GetTokenType() == Token.Type.PLUS)
+                return new UnaryOp(token.GetTokenType(), Wrapped());
+            }
+            else if (token.GetTokenType() == Token.Type.PLUS)
             {
                 Eat(Token.Type.PLUS);
                 return new UnaryOp(token.GetTokenType(), Wrapped());
@@ -102,7 +142,7 @@ namespace compilerTest
         {
             Ast node = UnaryParse();
             List<Token.Type> applicableTypes = new List<Token.Type> { Token.Type.DIV, Token.Type.MULT };
-            while(applicableTypes.Contains(currentToken.GetTokenType()))
+            while (applicableTypes.Contains(currentToken.GetTokenType()))
             {
                 Token token = currentToken;
                 if (token.GetTokenType() == Token.Type.MULT)
@@ -122,17 +162,103 @@ namespace compilerTest
         {
             Ast node = Term();
             List<Token.Type> applicableTypes = new List<Token.Type> { Token.Type.MINUS, Token.Type.PLUS };
-            while (applicableTypes.Contains(currentToken.GetTokenType())) {
+            while (applicableTypes.Contains(currentToken.GetTokenType()))
+            {
                 Token token = currentToken;
                 if (token.GetTokenType() == Token.Type.PLUS)
                 {
                     Eat(Token.Type.PLUS);
-                } else if (token.GetTokenType() == Token.Type.MINUS)
+                }
+                else if (token.GetTokenType() == Token.Type.MINUS)
                 {
                     Eat(Token.Type.MINUS);
                 }
                 node = new BinOp(node, token.GetTokenType(), Term());
             }
+            return node;
+        }
+
+        public Ast Empty()
+        {
+            return new NoOp();
+        }
+
+        public Ast Variable()
+        {
+            Var node = new Var(currentToken.GetValue());
+            Eat(Token.Type.ID);
+            return node;
+        }
+
+        public Ast Identifier()
+        {
+            Ident node = new Ident(currentToken.GetValue());
+            Eat(Token.Type.ID);
+            return node;
+        }
+
+        public Ast AssignmentStatement()
+        {
+            Assign node = new Assign();
+            node.AddLeft(Identifier());
+            node.AddOperator(currentToken);
+            Eat(Token.Type.ASSIGN);
+            node.AddRight(Expression());
+            return node;
+        }
+
+        public Ast Statement()
+        {
+            switch(currentToken.GetTokenType())
+            {
+                case Token.Type.BEGIN:
+                    return CompoundStatement();
+                case Token.Type.ID:
+                    return AssignmentStatement();
+                default:
+                    return Empty();
+            }
+        }
+
+        public List<Ast> StatementList()
+        {
+            Ast node = Statement();
+
+            List<Ast> nodes = new List<Ast> { node };
+
+            while (currentToken.GetTokenType() == Token.Type.SEMI)
+            {
+                Eat(Token.Type.SEMI);
+                nodes.Add(Statement());
+            }
+
+            if (currentToken.GetTokenType() == Token.Type.ID)
+            {
+                throw new Exception("ID not supported");
+            }
+
+            return nodes;
+        }
+
+        public Ast CompoundStatement()
+        {
+            Eat(Token.Type.BEGIN);
+            List<Ast> nodes = StatementList();
+            Eat(Token.Type.END);
+
+            Compound root = new Compound();
+            foreach (Ast ast in nodes)
+            {
+                root.Add(ast);
+            }
+
+            return root;
+        }
+
+        public Ast Program()
+        {
+            Ast node = CompoundStatement();
+            Eat(Token.Type.DOT);
             return node;
         }
     }

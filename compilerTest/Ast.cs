@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace compilerTest
 {
     abstract class Ast
     {
         abstract public dynamic Visit();
+
+        public static Dictionary<string, int> globalScope = new Dictionary<string, int>();
     }
 
     class BinOp : Ast
@@ -83,6 +86,99 @@ namespace compilerTest
             if (op == Token.Type.MINUS)
                 return -value.Visit();
             throw new NotSupportedException();
+        }
+    }
+
+    class Compound : Ast
+    {
+        readonly List<Ast> children = new List<Ast>();
+        public override dynamic Visit()
+        {
+            foreach (Ast node in children)
+            {
+                node.Visit();
+            }
+            Console.WriteLine(globalScope);
+            return null;
+        }
+
+        public void Add(Ast node)
+        {
+            children.Add(node);
+        }
+    }
+
+    class Assign : Ast
+    {
+        Ast left;
+        Token op;
+        Ast right;
+
+        public void AddLeft(Ast variableName)
+        {
+            left = variableName;
+        }
+
+        public void AddOperator(Token token)
+        {
+            op = token;
+        }
+        public void AddRight(Ast ast)
+        {
+            right = ast;
+        }
+        public override dynamic Visit()
+        {
+            dynamic key = left.Visit();
+            if (globalScope.ContainsKey(key))
+            {
+                globalScope[key] = right.Visit();
+            } else
+            {
+                globalScope.Add(left.Visit(), right.Visit());
+            }
+            return null;
+        }
+    }
+
+    class Var : Ast
+    {
+        readonly string name;
+
+        public Var(string name)
+        {
+            this.name = name;
+        }
+        public override dynamic Visit()
+        {
+            bool success = globalScope.TryGetValue(name, out int result);
+            if (success)
+            {
+                return result;
+            }
+            throw new KeyNotFoundException("Key {key} has not been delcared".Replace("{key}", name));
+        }
+    }
+
+    class Ident : Ast
+    {
+        readonly string identifier;
+        public Ident(string identifier)
+        {
+            this.identifier = identifier;
+        }
+
+        public override dynamic Visit()
+        {
+            return identifier;
+        }
+    }
+
+    class NoOp : Ast
+    {
+        public override dynamic Visit()
+        {
+            return null;
         }
     }
 

@@ -22,9 +22,9 @@ namespace compilerTest
                     continue;
                 }
                 Interpreter interpreter = new Interpreter(input);
-                Ast rootNode = interpreter.Expression();
-                int result = rootNode.Visit();
-                Console.WriteLine(result);
+                Ast rootNode = interpreter.Program();
+                rootNode.Visit();
+                Console.WriteLine();
             }
         }
     }

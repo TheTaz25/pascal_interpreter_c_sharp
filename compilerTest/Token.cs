@@ -11,7 +11,13 @@
             DIV,
             PAREN_OPEN,
             PAREN_CLOSE,
-            EOF
+            EOF,
+            BEGIN,
+            END,
+            DOT,
+            ASSIGN,
+            SEMI,
+            ID
         }
 
         readonly private Type type;

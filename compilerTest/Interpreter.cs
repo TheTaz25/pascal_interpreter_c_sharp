@@ -17,13 +17,24 @@ namespace compilerTest
         {
 
             text.SkipWhiteSpace();
+            text.SkipComment();
             if (text.IsEol())
             {
                 return new Token(Token.Type.EOF, null);
             }
 
             if (text.IsDigit())
-                return new Token(Token.Type.INTEGER, text.GetNextIntegerValue());
+            {
+                dynamic numberResult = text.GetNextNumberValue();
+                if (numberResult is int)
+                {
+                    return new Token(Token.Type.INTEGER_CONST, numberResult);
+                }
+                else if (numberResult is float)
+                {
+                    return new Token(Token.Type.REAL_CONST, text.GetNextNumberValue());
+                }
+            }
 
             if (text.IsAlphaNumeric())
             {
@@ -36,6 +47,16 @@ namespace compilerTest
                 text.AdvanceChar();
                 text.AdvanceChar();
                 return new Token(Token.Type.ASSIGN, ":=");
+            } else if (text.IsColon())
+            {
+                text.AdvanceChar();
+                return new Token(Token.Type.COLON, ":");
+            }
+
+            if (text.IsComma())
+            {
+                text.AdvanceChar();
+                return new Token(Token.Type.COMMA, ",");
             }
 
             if (text.IsSemicolon())
@@ -58,8 +79,8 @@ namespace compilerTest
                     return new Token(Token.Type.MINUS, text.GetChar(true));
                 if (text.IsMult())
                     return new Token(Token.Type.MULT, text.GetChar(true));
-                if (text.IsDiv())
-                    return new Token(Token.Type.DIV, text.GetChar(true));
+                if (text.IsFloatDiv())
+                    return new Token(Token.Type.FLOAT_DIV, text.GetChar(true));
             }
 
             if (text.IsParen())
@@ -91,8 +112,8 @@ namespace compilerTest
             Ast node;
             switch (currentToken.GetTokenType())
             {
-                case Token.Type.INTEGER:
-                    Eat(Token.Type.INTEGER);
+                case Token.Type.INTEGER_CONST:
+                    Eat(Token.Type.INTEGER_CONST);
                     node = new Numeric(tokenValue);
                     break;
                 case Token.Type.ID:
@@ -141,7 +162,7 @@ namespace compilerTest
         public Ast Term()
         {
             Ast node = UnaryParse();
-            List<Token.Type> applicableTypes = new List<Token.Type> { Token.Type.DIV, Token.Type.MULT };
+            List<Token.Type> applicableTypes = new List<Token.Type> { Token.Type.INTEGER_DIV, Token.Type.MULT, Token.Type.FLOAT_DIV };
             while (applicableTypes.Contains(currentToken.GetTokenType()))
             {
                 Token token = currentToken;
@@ -149,9 +170,12 @@ namespace compilerTest
                 {
                     Eat(Token.Type.MULT);
                 }
-                else if (token.GetTokenType() == Token.Type.DIV)
+                else if (token.GetTokenType() == Token.Type.INTEGER_DIV)
                 {
-                    Eat(Token.Type.DIV);
+                    Eat(Token.Type.INTEGER_DIV);
+                } else if(token.GetTokenType() == Token.Type.FLOAT_DIV)
+                {
+                    Eat(Token.Type.FLOAT_DIV);
                 }
                 node = new BinOp(node, token.GetTokenType(), UnaryParse());
             }

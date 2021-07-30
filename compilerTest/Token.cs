@@ -4,11 +4,12 @@
     {
         public enum Type
         {
-            INTEGER,
+            INTEGER_CONST,
             PLUS,
             MINUS,
             MULT,
-            DIV,
+            INTEGER_DIV,
+            FLOAT_DIV,
             PAREN_OPEN,
             PAREN_CLOSE,
             EOF,
@@ -17,7 +18,14 @@
             DOT,
             ASSIGN,
             SEMI,
-            ID
+            ID,
+            PROGRAM,
+            VAR,
+            COLON,
+            COMMA,
+            INTEGER,
+            REAL,
+            REAL_CONST,
         }
 
         readonly private Type type;

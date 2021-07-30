@@ -8,7 +8,7 @@ namespace compilerTest
         int currentPosition = 0;
         bool lastCharSent = false;
 
-        static readonly private List<char> alpha = new List<char>("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray());
+        static readonly private List<char> alpha = new List<char>("_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray());
         static readonly private List<char> digits = new List<char>() { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' };
         static readonly private List<char> mathChars = new List<char>() { '-', '+', '*', '/' };
         static readonly private List<char> parens = new List<char>() { '(', ')' };
@@ -16,8 +16,16 @@ namespace compilerTest
         public Text(string text)
         {
             chars = text.ToCharArray();
-            keywords.Add("BEGIN", Token.Type.BEGIN);
-            keywords.Add("END", Token.Type.END);
+            if (keywords.Count == 0)
+            {
+                keywords.Add("BEGIN", Token.Type.BEGIN);
+                keywords.Add("END", Token.Type.END);
+                keywords.Add("DIV", Token.Type.INTEGER_DIV);
+                keywords.Add("PROGRAM", Token.Type.PROGRAM);
+                keywords.Add("VAR", Token.Type.VAR);
+                keywords.Add("INTEGER", Token.Type.INTEGER);
+                keywords.Add("REAL", Token.Type.REAL);
+            }
         }
 
         public bool IsEol() => currentPosition == (chars.Length - 1) && lastCharSent;
@@ -65,25 +73,46 @@ namespace compilerTest
             }
         }
 
+        public void SkipComment()
+        {
+            while(chars[currentPosition] != '}')
+            {
+                AdvanceChar();
+            }
+            AdvanceChar();
+        }
+
         public bool IsPlus() => chars[currentPosition] == '+';
         public bool IsMinus() => chars[currentPosition] == '-';
         public bool IsMult() => chars[currentPosition] == '*';
-        public bool IsDiv() => chars[currentPosition] == '/';
+        public bool IsFloatDiv() => chars[currentPosition] == '/';
         public bool IsOpenParen() => chars[currentPosition] == '(';
         public bool IsClosingParen() => chars[currentPosition] == ')';
         public bool IsColon() => chars[currentPosition] == ':';
         public bool IsSemicolon() => chars[currentPosition] == ';';
         public bool IsDot() => chars[currentPosition] == '.';
+        public bool IsStartOfComment() => chars[currentPosition] == '{';
+        public bool IsComma() => chars[currentPosition] == ',';
 
-        public int GetNextIntegerValue()
+        public dynamic GetNextNumberValue()
         {
-            string allIntegers = GetChar().ToString();
+            string allNumbers = GetChar().ToString();
             AdvanceChar();
             while (!IsEol() && IsDigit())
             {
-                allIntegers += GetChar(true);
+                allNumbers += GetChar(true);
             }
-            return int.Parse(allIntegers);
+
+            if(!IsEol() && IsDot())
+            {
+                allNumbers += GetChar(true);
+                while(!IsEol() && IsDigit())
+                {
+                    allNumbers += GetChar(true);
+                }
+                return float.Parse(allNumbers);
+            }
+            return int.Parse(allNumbers);
         }
 
         public string GetNextAlphaNumericValue()
@@ -100,8 +129,12 @@ namespace compilerTest
 
         public Token GetTokenForKeyWord(string word)
         {
-            if (keywords.TryGetValue(word, out Token.Type result))
+            if (keywords.TryGetValue(word.ToUpper(), out Token.Type result))
             {
+                if (result == Token.Type.INTEGER_DIV)
+                {
+                    return new Token(result, "div");
+                }
                 return new Token(result, null);
             }
             else

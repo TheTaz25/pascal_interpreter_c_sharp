@@ -7,7 +7,7 @@ namespace compilerTest
     {
         abstract public dynamic Visit();
 
-        public static Dictionary<string, int> globalScope = new Dictionary<string, int>();
+        public static Dictionary<string, dynamic> globalScope = new Dictionary<string, dynamic>();
     }
 
     class BinOp : Ast
@@ -54,7 +54,7 @@ namespace compilerTest
             dynamic rightValue = right.Visit();
             switch (op)
             {
-                case Token.Type.DIV:
+                case Token.Type.INTEGER_DIV:
                     return leftValue / rightValue;
                 case Token.Type.MULT:
                     return leftValue * rightValue;
@@ -62,6 +62,8 @@ namespace compilerTest
                     return leftValue + rightValue;
                 case Token.Type.MINUS:
                     return leftValue - rightValue;
+                case Token.Type.FLOAT_DIV:
+                    return (float)leftValue / (float)rightValue;
                 default:
                     throw new NotSupportedException();
             }
@@ -98,7 +100,10 @@ namespace compilerTest
             {
                 node.Visit();
             }
-            Console.WriteLine(globalScope);
+            foreach (dynamic item in globalScope.Values)
+            {
+                Console.WriteLine(item);
+            }
             return null;
         }
 
@@ -151,7 +156,7 @@ namespace compilerTest
         }
         public override dynamic Visit()
         {
-            bool success = globalScope.TryGetValue(name, out int result);
+            bool success = globalScope.TryGetValue(name, out dynamic result);
             if (success)
             {
                 return result;
@@ -200,6 +205,72 @@ namespace compilerTest
         public override dynamic Visit()
         {
             return value;
+        }
+    }
+
+    class ProgramSpec : Ast
+    {
+        string programName;
+        Ast block;
+        public ProgramSpec(string name, Ast block)
+        {
+            programName = name;
+            this.block = block;
+        }
+
+
+        public override dynamic Visit()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    class Block : Ast
+    {
+        List<Ast> declarations;
+        Ast compoundStatement;
+        public Block(List<Ast> declarations, Ast compoundStatement)
+        {
+            this.declarations = declarations;
+            this.compoundStatement = compoundStatement;
+        }
+
+        public override dynamic Visit()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    class VarDecleration : Ast
+    {
+        Ast var;
+        Ast type;
+
+        public VarDecleration(Ast var, Ast type)
+        {
+            this.var = var;
+            this.type = type;
+        }
+
+        public override dynamic Visit()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    class VarType : Ast
+    {
+        Token token;
+        dynamic value;
+        public VarType(Token token)
+        {
+            this.token = token;
+            value = token.GetValue();
+        }
+
+        public override dynamic Visit()
+        {
+            throw new NotImplementedException();
         }
     }
 }

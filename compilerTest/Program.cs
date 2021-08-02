@@ -6,26 +6,12 @@ namespace compilerTest
     {
         static void Main()
         {
-            string input;
-            while (true)
-            {
-                try
-                {
-                    input = Console.ReadLine();
-                }
-                catch
-                {
-                    break;
-                }
-                if (input.Equals(""))
-                {
-                    continue;
-                }
-                Interpreter interpreter = new Interpreter(input);
-                Ast rootNode = interpreter.Program();
-                rootNode.Visit();
-                Console.WriteLine();
-            }
+            string input = System.IO.File.ReadAllText(@"D:\Code\compilerTest\compilerTest\compilerTest\theProgram.txt");
+                
+            Interpreter interpreter = new Interpreter(input);
+            Ast rootNode = interpreter.Program();
+            rootNode.Visit();
+            Console.WriteLine();
         }
     }
 }

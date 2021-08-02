@@ -55,7 +55,7 @@ namespace compilerTest
             switch (op)
             {
                 case Token.Type.INTEGER_DIV:
-                    return leftValue / rightValue;
+                    return (int)(leftValue / rightValue);
                 case Token.Type.MULT:
                     return leftValue * rightValue;
                 case Token.Type.PLUS:
@@ -63,7 +63,7 @@ namespace compilerTest
                 case Token.Type.MINUS:
                     return leftValue - rightValue;
                 case Token.Type.FLOAT_DIV:
-                    return (float)leftValue / (float)rightValue;
+                    return (float)((float)leftValue / (float)rightValue);
                 default:
                     throw new NotSupportedException();
             }
@@ -191,8 +191,8 @@ namespace compilerTest
 
     class Numeric : Ast
     {
-        readonly int value;
-        public Numeric(int value)
+        readonly dynamic value;
+        public Numeric(dynamic value)
         {
             this.value = value;
         }
@@ -223,7 +223,8 @@ namespace compilerTest
 
         public override dynamic Visit()
         {
-            throw new NotImplementedException();
+            block.Visit();
+            return null;
         }
     }
 
@@ -239,7 +240,12 @@ namespace compilerTest
 
         public override dynamic Visit()
         {
-            throw new NotImplementedException();
+            foreach (Ast node in declarations)
+            {
+                node.Visit();
+            }
+            compoundStatement.Visit();
+            return null;
         }
     }
 
@@ -256,7 +262,7 @@ namespace compilerTest
 
         public override dynamic Visit()
         {
-            throw new NotImplementedException();
+            return null;
         }
     }
 
@@ -272,7 +278,7 @@ namespace compilerTest
 
         public override dynamic Visit()
         {
-            throw new NotImplementedException();
+            return null;
         }
     }
 }

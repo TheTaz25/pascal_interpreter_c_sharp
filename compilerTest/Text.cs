@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace compilerTest
 {
@@ -60,10 +61,13 @@ namespace compilerTest
         public bool IsAlpha() => alpha.Contains(chars[currentPosition]);
 
 
-        public void SkipWhiteSpace()
+        public bool SkipWhiteSpace()
         {
-            while (char.IsWhiteSpace(chars[currentPosition]))
+            bool result = false;
+            List<char> whitelist = new List<char> { '\n', '\r', '\t', ' ' };
+            while(whitelist.Contains(chars[currentPosition]))
             {
+                result = true;
                 AdvanceChar();
                 if (IsEolReal())
                 {
@@ -71,15 +75,22 @@ namespace compilerTest
                     break;
                 }
             }
+            return result;
         }
 
-        public void SkipComment()
+        public bool SkipComment()
         {
-            while(chars[currentPosition] != '}')
+            bool result = false;
+            if (chars[currentPosition] == '{')
             {
+                result = true;
+                while(chars[currentPosition] != '}')
+                {
+                    AdvanceChar();
+                }
                 AdvanceChar();
             }
-            AdvanceChar();
+            return result;
         }
 
         public bool IsPlus() => chars[currentPosition] == '+';
@@ -105,7 +116,8 @@ namespace compilerTest
 
             if(!IsEol() && IsDot())
             {
-                allNumbers += GetChar(true);
+                allNumbers += ',';
+                GetChar(true);
                 while(!IsEol() && IsDigit())
                 {
                     allNumbers += GetChar(true);

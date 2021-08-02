@@ -15,9 +15,8 @@ namespace compilerTest
 
         private Token GetNextToken()
         {
-
-            text.SkipWhiteSpace();
-            text.SkipComment();
+            while (text.SkipComment() || text.SkipWhiteSpace()) { }
+            
             if (text.IsEol())
             {
                 return new Token(Token.Type.EOF, null);
@@ -32,7 +31,7 @@ namespace compilerTest
                 }
                 else if (numberResult is float)
                 {
-                    return new Token(Token.Type.REAL_CONST, text.GetNextNumberValue());
+                    return new Token(Token.Type.REAL_CONST, numberResult);
                 }
             }
 
@@ -91,7 +90,7 @@ namespace compilerTest
                     return new Token(Token.Type.PAREN_CLOSE, text.GetChar(true));
             }
 
-            throw new Exception("Token not recognized: " + text.GetChar());
+            throw new Exception("Token not recognized: " + (int)text.GetChar());
         }
 
         private void Eat(Token.Type type)
@@ -270,6 +269,7 @@ namespace compilerTest
 
         public Ast CompoundStatement()
         {
+            // GetNextToken();
             Eat(Token.Type.BEGIN);
             List<Ast> nodes = StatementList();
             Eat(Token.Type.END);

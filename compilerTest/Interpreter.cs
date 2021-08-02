@@ -116,6 +116,10 @@ namespace compilerTest
                     Eat(Token.Type.INTEGER_CONST);
                     node = new Numeric(tokenValue);
                     break;
+                case Token.Type.REAL_CONST:
+                    Eat(Token.Type.REAL_CONST);
+                    node = new Numeric(tokenValue);
+                    break;
                 case Token.Type.ID:
                     Eat(Token.Type.ID);
                     node = new Var(tokenValue);
@@ -207,7 +211,7 @@ namespace compilerTest
             return new NoOp();
         }
 
-        public Ast Variable()
+        public Var Variable()
         {
             Var node = new Var(currentToken.GetValue());
             Eat(Token.Type.ID);
@@ -281,9 +285,14 @@ namespace compilerTest
 
         public Ast Program()
         {
-            Ast node = CompoundStatement();
+            Eat(Token.Type.PROGRAM);
+            Var varNode = Variable();
+            string programName = varNode.getName();
+            Eat(Token.Type.SEMI);
+            Ast blockNode = Block();
+            Ast programNode = new ProgramSpec(programName, blockNode);
             Eat(Token.Type.DOT);
-            return node;
+            return programNode;
         }
 
         public Ast Block()

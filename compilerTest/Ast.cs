@@ -154,6 +154,8 @@ namespace compilerTest
         {
             this.name = name;
         }
+
+        public string getName() => name;
         public override dynamic Visit()
         {
             bool success = globalScope.TryGetValue(name, out dynamic result);

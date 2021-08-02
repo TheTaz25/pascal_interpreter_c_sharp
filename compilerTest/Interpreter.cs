@@ -285,5 +285,63 @@ namespace compilerTest
             Eat(Token.Type.DOT);
             return node;
         }
+
+        public Ast Block()
+        {
+            List<Ast> declarationNodes = Declarations();
+            Ast compoundStatementNode = CompoundStatement();
+            return new Block(declarationNodes, compoundStatementNode);
+        }
+
+        public List<Ast> Declarations()
+        {
+            List<Ast> declarations = new List<Ast>();
+            if (currentToken.GetTokenType() == Token.Type.VAR)
+            {
+                Eat(Token.Type.VAR);
+                while (currentToken.GetTokenType() == Token.Type.ID)
+                {
+                    List<Ast> declaration = VariableDeclaration();
+                    declarations.AddRange(declaration);
+                    Eat(Token.Type.SEMI);
+                }
+            }
+            return declarations;
+        }
+
+        public List<Ast> VariableDeclaration()
+        {
+            List<Ast> varNodes = new List<Ast> { new Var(currentToken.GetValue()) };
+            Eat(Token.Type.ID);
+
+            while (currentToken.GetTokenType() == Token.Type.COMMA)
+            {
+                Eat(Token.Type.COMMA);
+                varNodes.Add(new Var(currentToken.GetValue()));
+                Eat(Token.Type.ID);
+            }
+
+            Eat(Token.Type.COLON);
+            Ast typeNode = TypeSpec();
+            List<Ast> varDeclarations = new List<Ast>();
+            foreach (Ast node in varNodes)
+            {
+                varDeclarations.Add(new VarDecleration(node, typeNode));
+            }
+            return varDeclarations;
+        }
+
+        public Ast TypeSpec()
+        {
+            Token token = currentToken;
+            if (currentToken.GetTokenType() == Token.Type.INTEGER)
+            {
+                Eat(Token.Type.INTEGER);
+            } else
+            {
+                Eat(Token.Type.REAL);
+            }
+            return new VarType(token);
+        }
     }
 }
